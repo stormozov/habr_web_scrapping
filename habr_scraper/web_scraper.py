@@ -2,6 +2,7 @@ import bs4
 import requests
 
 from fake_headers import Headers
+from habr_scraper.fs_tools import get_absolute_path, save_data_to_json, make_dir
 
 
 class HabrWebScraper:
@@ -120,4 +121,10 @@ class HabrWebScraper:
     def get_articles_count(self) -> int:
         all_articles: list = self.scrape()
         return len(all_articles)
+
+    def save_to_json_file(self, filename: str) -> None:
+        make_dir('habr_scraper_output')
+        abs_path = get_absolute_path(['habr_scraper_output', filename])
+        save_data_to_json(self.scrape(), abs_path)
+
 

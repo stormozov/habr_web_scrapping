@@ -5,4 +5,4 @@ if __name__ == '__main__':
     KEYWORDS = ['дизайн', 'фото', 'web', 'python']
     scraper = HabrWebScraper(DOMAIN, KEYWORDS, 'articles')
     scraper.send_request()
-    result = scraper.scrape()
+    scraper.save_to_json_file('habr')
