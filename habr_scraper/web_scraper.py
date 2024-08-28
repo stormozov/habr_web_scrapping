@@ -72,37 +72,52 @@ class HabrWebScraper:
         )
         return [el.text.replace('*', '') for el in tags]
 
-    def filter_articles_by_keywords(self, articles: list):
-        filtered_articles = []
+    def extract_article_data(self, article) -> dict[str, str]:
+        return {
+            'title': self.get_title(article).strip(),
+            'time': self.get_datetime(article),
+            'url': self.get_url(article),
+            'preview_text': self.get_preview_text(article).strip(),
+            'author': self.get_author(article).strip(),
+            'prev_img': self.get_prev_img(article),
+            'tags': self.get_tags(article)
+        }
 
-        for article in articles:
-            article_title = self.get_title(article).strip()
-            article_preview_text = self.get_preview_text(article).strip()
-            article_author = self.get_author(article).strip()
-            article_datatime = self.get_datetime(article)
-            article_url = self.get_url(article)
-            article_prev_img = self.get_prev_img(article)
-            article_tag = self.get_tags(article)
+    @staticmethod
+    def _article_matches_keywords(keywords: list, article: dict[str, str]) \
+            -> bool:
+        article_data_lower = {
+            'title': article['title'].lower(),
+            'preview_text': article['preview_text'].lower(),
+            'tags': [tag.lower() for tag in article['tags']]
+        }
+        return any(
+            keyword in article_data_lower['title']
+            or keyword in article_data_lower['preview_text']
+            or keyword in article_data_lower['tags']
+            for keyword in keywords
+        )
 
-            if any(keyword.lower() in article_title.lower()
-                   or keyword.lower() in article_preview_text.lower()
-                   or keyword.lower() in [tag.lower() for tag in article_tag]
-                   for keyword in self.keywords):
-                filtered_articles.append({
-                    'title': article_title,
-                    'time': article_datatime,
-                    'url': article_url,
-                    'preview_text': article_preview_text,
-                    'author': article_author,
-                    'prev_img': article_prev_img,
-                    'tags': article_tag
-                })
+    def filter_articles_by_keywords(self, articles: list) \
+            -> list[dict[str, str]]:
+        if not self.keywords:
+            return [self.extract_article_data(article) for article in articles]
 
-        yield from filtered_articles
+        keywords_lower = [keyword.lower() for keyword in self.keywords]
 
-    def scrape(self):
+        return [
+            self.extract_article_data(article)
+            for article in articles
+            if self._article_matches_keywords(
+                keywords_lower, self.extract_article_data(article)
+            )
+        ]
+
+    def scrape(self) -> list[dict[str, str]]:
         all_articles: list = self.get_articles()
-        filtered_articles = self.filter_articles_by_keywords(all_articles)
+        return self.filter_articles_by_keywords(all_articles)
 
-        return filtered_articles
+    def get_articles_count(self) -> int:
+        all_articles: list = self.scrape()
+        return len(all_articles)
 
