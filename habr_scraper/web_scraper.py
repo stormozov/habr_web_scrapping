@@ -55,6 +55,13 @@ class HabrWebScraper:
         return ' '.join([el.text for el in html_tag_p])
 
     @staticmethod
+    def get_full_article_text(url):
+        response = requests.get(url)
+        soup = bs4.BeautifulSoup(response.text, features='lxml')
+        article_text = soup.find('div', class_='article-formatted-body').text
+        return article_text
+
+    @staticmethod
     def get_author(article):
         return article.find('a', class_='tm-user-info__username').text
 
@@ -79,6 +86,7 @@ class HabrWebScraper:
             'time': self.get_datetime(article),
             'url': self.get_url(article),
             'preview_text': self.get_preview_text(article).strip(),
+            'full_text': self.get_full_article_text(self.get_url(article)),
             'author': self.get_author(article).strip(),
             'prev_img': self.get_prev_img(article),
             'tags': self.get_tags(article)
