@@ -3,6 +3,7 @@ import requests
 
 from fake_headers import Headers
 from habr_scraper.fs_tools import get_absolute_path, save_data_to_json, make_dir
+from tqdm import tqdm
 
 
 class HabrWebScraper:
@@ -81,14 +82,16 @@ class HabrWebScraper:
 
         return [
             self._extract_article_data(article)
-            for article in articles
+            for article in tqdm(articles, desc='Filtering articles')
             if self._article_matches_keywords(
                 keywords_lower, self._extract_article_data(article)
             )
         ]
 
     def scrape(self) -> list[dict[str, str]]:
-        all_articles: list = self.get_articles()
+        with tqdm(desc='Scraping articles') as pbar:
+            all_articles: list = self.get_articles()
+            pbar.update(1)
         return self.filter_articles_by_keywords(all_articles)
 
     @staticmethod
@@ -98,9 +101,11 @@ class HabrWebScraper:
     @staticmethod
     def save_to_json_file(file_name: str, articles: list[dict[str, str]]) \
             -> None:
-        make_dir('habr_scraper_output')
-        abs_path = get_absolute_path(['habr_scraper_output', file_name])
-        save_data_to_json(articles, abs_path)
+        with tqdm(desc='Saving articles to JSON file') as pbar:
+            make_dir('habr_scraper_output')
+            abs_path = get_absolute_path(['habr_scraper_output', file_name])
+            save_data_to_json(articles, abs_path)
+            pbar.update(1)
 
     @staticmethod
     def _get_fake_headers():
