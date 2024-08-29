@@ -78,6 +78,29 @@ class HabrWebScraper:
             pbar.update(1)
 
     @staticmethod
+    def get_len(articles: list[dict[str, str]]) -> int:
+        """Returns the number of articles in the response"""
+        return len(articles)
+
+    def get_scrape_info(self, articles: list[dict[str, str]]) -> str:
+        """Returns a string representation of scraped articles.
+
+        Args:
+            articles (list[dict[str, str]]): The list of scraped articles.
+
+        Returns:
+            str: A string representation of scraped articles.
+        """
+        return (
+            f'Number of articles: {self.get_len(articles)}\n'
+            + '\n'.join(
+                f'<{article["time"]}> — <{article["title"]}> '
+                f'— <{article["url"]}>'
+                for article in articles
+            )
+        )
+
+    @staticmethod
     def _get_fake_headers() -> dict[str, str]:
         """Returns a fake user agent header"""
         return Headers(browser='chrome', os='windows').generate()
