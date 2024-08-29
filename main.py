@@ -1,4 +1,5 @@
-from habr_scraper import HabrWebScraper
+# from habr_scraper import HabrWebScraper
+from habr_scraper.scraper import HabrWebScraper
 
 if __name__ == '__main__':
     KEYWORDS = ['дизайн', 'фото', 'web', 'python']
